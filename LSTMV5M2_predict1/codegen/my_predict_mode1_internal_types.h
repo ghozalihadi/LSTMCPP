@@ -39,7 +39,7 @@ typedef struct {
 #define typedef_c_coder_ctarget_DeepLearningNet
 typedef struct {
   cell_5 State;
-  unsigned char IsInitialized; //////change bool to unsigned char
+  boolean_T IsInitialized;
 } c_coder_ctarget_DeepLearningNet;
 #endif /* typedef_c_coder_ctarget_DeepLearningNet */
 

@@ -14,7 +14,7 @@
 #include <string.h>
 
 /* Variable Definitions */
-static unsigned char mynet_not_empty;
+static boolean_T mynet_not_empty;
 
 /* Function Definitions */
 /*
@@ -44,8 +44,8 @@ float my_predict_mode1(double in[210])
   }
   /*  load network according to mode */
   if (!mynet_not_empty) {
-    mynet.IsInitialized = 0;  //////change false to 0
-    mynet_not_empty = 1; //////change true to 1
+    mynet.IsInitialized = false;
+    mynet_not_empty = true;
   }
   /*  pre-processing steps (INSERT DIRECTLY BELOW THIS LINE!) */
   /*  Voltage Normalization */
@@ -104,7 +104,7 @@ float my_predict_mode1(double in[210])
  */
 void my_predict_mode1_init(void)
 {
-  mynet_not_empty = 0; //////change false to 0
+  mynet_not_empty = false;
 }
 
 /*

@@ -20,6 +20,7 @@ RM := rm -rf
 -include Libraries/iLLD/TC23A/Tricore/Gtm/Std/subdir.mk
 -include Libraries/iLLD/TC23A/Tricore/Cpu/Trap/subdir.mk
 -include Libraries/iLLD/TC23A/Tricore/Cpu/Std/subdir.mk
+-include Libraries/iLLD/TC23A/Tricore/Cpu/Irq/subdir.mk
 -include Libraries/iLLD/TC23A/Tricore/Cpu/CStart/subdir.mk
 -include Libraries/iLLD/TC23A/Tricore/Asclin/Std/subdir.mk
 -include Libraries/iLLD/TC23A/Tricore/Asclin/Asc/subdir.mk

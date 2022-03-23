@@ -19,7 +19,7 @@ void my_predict_mode1_initialize(void)
 {
   omp_init_nest_lock(&emlrtNestLockGlobal);
   my_predict_mode1_init();
-  isInitialized_my_predict_mode1 = 1;  /////////change true to 1
+  isInitialized_my_predict_mode1 = true;
 }
 
 /*

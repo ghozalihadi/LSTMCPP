@@ -11,7 +11,7 @@
 /* Variable Definitions */
 omp_nest_lock_t emlrtNestLockGlobal;
 
-unsigned char isInitialized_my_predict_mode1 = 0; /////////////change boolean to unsigned char
+boolean_T isInitialized_my_predict_mode1 = false;
 
 /*
  * File trailer for my_predict_mode1_data.c

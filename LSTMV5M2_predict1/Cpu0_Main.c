@@ -42,12 +42,14 @@
 #include "IfxGtm_Tom_Timer.h"
 #include "IfxPort.h"
 #include "Bsp.h"
+#include "UART_VCOM.h"
+#include "Input_Matlab.h"
 
 #define LED_D107_0 &MODULE_P13,0                                           /* LED D107: Port, Pin definition       */
 #define LED_D107_1 &MODULE_P13,1                                           /* LED D107: Port, Pin definition       */
 #define LED_D107_2 &MODULE_P13,2                                           /* LED D107: Port, Pin definition       */
 #define LED_D107_3 &MODULE_P13,3                                           /* LED D107: Port, Pin definition       */
-#define WAIT_TIME   500                                                     /* Wait time constant in milliseconds   */
+#define WAIT_TIME   100                                                     /* Wait time constant in milliseconds   */
 
 void BlinkLEDs(int l){
     // Toggle the state of the LED
@@ -65,37 +67,53 @@ void BlinkLEDs(int l){
             IfxPort_togglePin(LED_D107_3);
             break;
     }
-    waitTime(IfxStm_getTicksFromMilliseconds(BSP_DEFAULT_TIMER, WAIT_TIME));    // Wait 500 milliseconds
+    waitTime(IfxStm_getTicksFromMilliseconds(BSP_DEFAULT_TIMER, WAIT_TIME));    // Wait 100 milliseconds
 }
 ////////////////////////////
 
 IfxCpu_syncEvent g_cpuSyncEvent = 0;
 /////////////////////
 App_Cpu0 g_AppCpu0;
+uint8 input_counter=0;
+extern float SOH;
+//extern double input_manual[185][210];
+extern uint32 output_counter;
 ///////////////////
 
 /* Function Declarations */
-static void argInit_3x70_real_T(double result[210]);
+void argInit_3x70_real_T(double result[210]);
 
-static double argInit_real_T(void);
+double argInit_real_T(void);
 
-static void main_my_predict_mode1(void);
+void main_my_predict_mode1(void);
 
 /* Function Definitions */
 /*
  * Arguments    : double result[210]
  * Return Type  : void
  */
-static void argInit_3x70_real_T(double result[210])
+void argInit_3x70_real_T(double result[210])
 {
   int idx0;
   int idx1;
   /* Loop over the array to initialize each element. */
+  input_counter=0;
   for (idx0 = 0; idx0 < 3; idx0++) {
     for (idx1 = 0; idx1 < 70; idx1++) {
       /* Set the value of the array element.
-Change this value to the value that the application requires. */
+         Change this value to the value that the application requires. */
+
+      ////////test with very high value to see significant change////////////
+      /*
+      if (output_counter>=10){
+          result[idx0 + 3 * idx1] = 10000;
+      }
+      else {
+          result[idx0 + 3 * idx1] = argInit_real_T();
+      }
+      */
       result[idx0 + 3 * idx1] = argInit_real_T();
+      input_counter++;
     }
   }
 }
@@ -104,16 +122,16 @@ Change this value to the value that the application requires. */
  * Arguments    : void
  * Return Type  : double
  */
-static double argInit_real_T(void)
+double argInit_real_T(void)
 {
-  return 0.0;
+  return input_manual[output_counter][input_counter];
 }
 
 /*
  * Arguments    : void
  * Return Type  : void
  */
-static void main_my_predict_mode1(void)
+void main_my_predict_mode1(void)
 {
   double dv[210];
   float out;
@@ -122,12 +140,11 @@ static void main_my_predict_mode1(void)
   /* Call the entry-point 'my_predict_mode1'. */
   argInit_3x70_real_T(dv);
   out = my_predict_mode1(dv);
+  SOH = out;
 }
 
 int core0_main(void)
 {
-    IfxCpu_enableInterrupts();
-    
     /* !!WATCHDOG0 AND SAFETY WATCHDOG ARE DISABLED HERE!!
      * Enable the watchdogs and service them periodically if it is required
      */
@@ -136,7 +153,7 @@ int core0_main(void)
     
     /* Wait for CPU sync event */
     IfxCpu_emitEvent(&g_cpuSyncEvent);
-    IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
+    /////////////IfxCpu_waitEvent(&g_cpuSyncEvent, 1);
     
     /* Initialise the application state */
     g_AppCpu0.info.pllFreq = IfxScuCcu_getPllFrequency();
@@ -148,7 +165,7 @@ int core0_main(void)
     IfxCpu_enableInterrupts();
 
     /* Demo init */
-    AsclinAscDemo_init();
+    ///////////////AsclinAscDemo_init();
 
     ///////////////////////////////////////
     IfxPort_setPinModeOutput(LED_D107_0, IfxPort_OutputMode_pushPull, IfxPort_OutputIdx_general); // Initialization of the LED used in this example
@@ -161,10 +178,12 @@ int core0_main(void)
     IfxPort_setPinHigh(LED_D107_3); // Switch OFF the LED (low-level active)
     int l = 0;
 
-    main_my_predict_mode1();
+    init_UART();            /* Initialize the module            */
+
+    /////////main_my_predict_mode1();
     /* Terminate the application.
     You do not need to do this more than one time. */
-    my_predict_mode1_terminate();
+    /////////my_predict_mode1_terminate();
     ///////////////////////////////////////
 
     while(1)
@@ -174,8 +193,20 @@ int core0_main(void)
         if (l==3) l=0;
         else l++;
 
-        AsclinAscDemo_run();
-        REGRESSION_RUN_STOP_PASS;
+
+        if (output_counter==30){
+            my_predict_mode1_terminate();
+            output_counter=0;
+        }
+        else{
+            main_my_predict_mode1();
+            output_counter++;
+        }
+        send_UART_message();    /* Send the message "Hello World!"  */
+
+
+        //AsclinAscDemo_run();
+        //REGRESSION_RUN_STOP_PASS;
         ////////////////////////////
     }
     return (1);

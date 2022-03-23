@@ -6,7 +6,7 @@
  */
 
 /* Include Files */
-#include <codegen/lstmForward.h>
+#include "lstmForward.h"
 #include <math.h>
 #include <string.h>
 

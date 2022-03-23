@@ -17,7 +17,7 @@
 void my_predict_mode1_terminate(void)
 {
   omp_destroy_nest_lock(&emlrtNestLockGlobal);
-  isInitialized_my_predict_mode1 = 0;  //////change false to 0
+  isInitialized_my_predict_mode1 = false;
 }
 
 /*

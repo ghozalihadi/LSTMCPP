@@ -4,16 +4,20 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../Demo_Illd/AsclinAscDemo.c 
+../Demo_Illd/AsclinAscDemo.c \
+../Demo_Illd/UART_VCOM.c 
 
 OBJS += \
-./Demo_Illd/AsclinAscDemo.o 
+./Demo_Illd/AsclinAscDemo.o \
+./Demo_Illd/UART_VCOM.o 
 
 COMPILED_SRCS += \
-./Demo_Illd/AsclinAscDemo.src 
+./Demo_Illd/AsclinAscDemo.src \
+./Demo_Illd/UART_VCOM.src 
 
 C_DEPS += \
-./Demo_Illd/AsclinAscDemo.d 
+./Demo_Illd/AsclinAscDemo.d \
+./Demo_Illd/UART_VCOM.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes

@@ -2051,7 +2051,7 @@ float DeepLearningNetwork_predict(c_coder_ctarget_DeepLearningNet *obj,
     memset(&obj->State.f1[1].f1[0], 0, 32U * sizeof(float));
     memset(&obj->State.f2[0].f1[0], 0, 16U * sizeof(float));
     memset(&obj->State.f2[1].f1[0], 0, 16U * sizeof(float));
-    obj->IsInitialized = 1; //////change true to 1
+    obj->IsInitialized = true;
   }
   for (i = 0; i < 105; i++) {
     b_varargin_1[i] = (float)varargin_1[i];

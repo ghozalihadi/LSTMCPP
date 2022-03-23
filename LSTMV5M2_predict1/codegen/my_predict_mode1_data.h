@@ -16,7 +16,7 @@
 
 /* Variable Declarations */
 extern omp_nest_lock_t emlrtNestLockGlobal;
-extern unsigned char isInitialized_my_predict_mode1;
+extern boolean_T isInitialized_my_predict_mode1;
 
 #endif
 /*
