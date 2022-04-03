@@ -43,7 +43,6 @@
 #include "IfxPort.h"
 #include "Bsp.h"
 #include "UART_VCOM.h"
-#include "Input_Matlab.h"
 
 #define LED_D107_0 &MODULE_P13,0                                           /* LED D107: Port, Pin definition       */
 #define LED_D107_1 &MODULE_P13,1                                           /* LED D107: Port, Pin definition       */
@@ -76,8 +75,11 @@ IfxCpu_syncEvent g_cpuSyncEvent = 0;
 App_Cpu0 g_AppCpu0;
 uint8 input_counter=0;
 extern float SOH;
-//extern double input_manual[185][210];
+extern float SOH_ref;
+extern double input_manual[168];
+extern double output_real[168];
 extern uint32 output_counter;
+extern Ifx_TickTime timeNow;
 ///////////////////
 
 /* Function Declarations */
@@ -92,7 +94,7 @@ void main_my_predict_mode2(void);
  */
 double argInit_real_T(void)
 {
-  return input_manual2[output_counter];
+  return input_manual[output_counter];
 }
 
 /*
@@ -107,6 +109,7 @@ void main_my_predict_mode2(void)
   /* Call the entry-point 'my_predict_mode1'. */
   out = my_predict_mode2(argInit_real_T());
   SOH = out;
+  SOH_ref = output_real[output_counter];
 }
 
 int core0_main(void)
@@ -155,15 +158,17 @@ int core0_main(void)
     while(1)
     {
         ////////////////////////////
-        BlinkLEDs(l);
+        timeNow = now();    //saving initial time before computing the machine learning part
+        BlinkLEDs(l);     //This blinking led just to test if the loop works, and estimate/verify the computation time
         if (l==3) l=0;
         else l++;
 
 
         if (output_counter==168){
-            ///////my_predict_mode2_terminate();
-            ///////waitTime(IfxStm_getTicksFromMilliseconds(BSP_DEFAULT_TIMER, 5000));
+            my_predict_mode2_terminate();
+            printRMSE();   // Print RMSE value
             output_counter=0;
+            waitTime(IfxStm_getTicksFromMilliseconds(BSP_DEFAULT_TIMER, 10000));    // Wait 10 seconds
         }
         else{
             main_my_predict_mode2();

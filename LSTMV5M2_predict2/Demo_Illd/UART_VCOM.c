@@ -31,7 +31,10 @@
 #include "IfxAsclin_Asc.h"
 #include "IfxCpu_Irq.h"
 #include "Bsp.h"
+#include "Input_Matlab.h"
 #include <stdio.h>
+#include <inttypes.h>
+#include <math.h>
 
 /*********************************************************************************************************************/
 /*------------------------------------------------------Macros-------------------------------------------------------*/
@@ -50,11 +53,14 @@
 /*********************************************************************************************************************/
 IfxAsclin_Asc g_asc;                                                        /* Declaration of the ASC handle        */
 ///////////////////////////////////
-char txData[70];        /*Variable to store values which will be printed in terminal */
+char txData[100];        /*Variable to store values which will be printed in terminal */
+char txData2[20];        /*Variable to store RMSE value in string form which will be printed in terminal */
 Ifx_SizeT count;
 float SOH = 1.0;        /*Initial predicted SOH value */
-//double input_manual[185][210];
+float SOH_ref = 1.0;    /*Real-Value (reference) */
+float SOH_buff[168];    /*Buffer for predicted SOH values*/
 uint32 output_counter = 0;
+Ifx_TickTime timeNow = 0;
 ///////////////////////////////////
 
 /* The transfer buffers allocate memory for the data itself and for FIFO runtime variables.
@@ -106,8 +112,21 @@ void init_UART(void)
 
 void send_UART_message(void)
 {
-    sprintf(txData, "%ld, %.9f\r\n", output_counter, SOH);
-    //printf("This line for test");
+    sprintf(txData, "The %ld-th SOH: %.5f, SOH real-value: %.5f, process time %.2f ms\r\n", output_counter, SOH, SOH_ref, (float)(now()-timeNow)/100000);
     count = sizeof(txData)/sizeof(txData[0]);                  /* Size of the message            */
     IfxAsclin_Asc_write(&g_asc, (uint8 *)txData, &count, TIME_INFINITE); /* Transfer of data               */
+    SOH_buff[output_counter-1] = SOH;
+}
+
+void printRMSE(void)
+{
+    float square=0;
+    for (int i=0;i<168;i++){
+        square += ((SOH_buff[i] - output_real[i])*(SOH_buff[i] - output_real[i]))/168;
+    }
+    float RMSE;
+    RMSE = sqrt(square);
+    sprintf(txData2, "RMSE value %.5f\r\n", RMSE);
+    count = sizeof(txData2)/sizeof(txData2[0]);                  /* Size of the message            */
+    IfxAsclin_Asc_write(&g_asc, (uint8 *)txData2, &count, TIME_INFINITE); /* Transfer of data               */
 }

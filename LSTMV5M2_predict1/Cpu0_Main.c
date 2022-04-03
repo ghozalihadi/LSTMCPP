@@ -43,7 +43,6 @@
 #include "IfxPort.h"
 #include "Bsp.h"
 #include "UART_VCOM.h"
-#include "Input_Matlab.h"
 
 #define LED_D107_0 &MODULE_P13,0                                           /* LED D107: Port, Pin definition       */
 #define LED_D107_1 &MODULE_P13,1                                           /* LED D107: Port, Pin definition       */
@@ -76,8 +75,12 @@ IfxCpu_syncEvent g_cpuSyncEvent = 0;
 App_Cpu0 g_AppCpu0;
 uint8 input_counter=0;
 extern float SOH;
-//extern double input_manual[185][210];
+extern float SOH_ref;
+extern double input_manual[150][210];
+extern double output_manual[150];
 extern uint32 output_counter;
+extern Ifx_TickTime timeNow;
+
 ///////////////////
 
 /* Function Declarations */
@@ -102,16 +105,6 @@ void argInit_3x70_real_T(double result[210])
     for (idx1 = 0; idx1 < 70; idx1++) {
       /* Set the value of the array element.
          Change this value to the value that the application requires. */
-
-      ////////test with very high value to see significant change////////////
-      /*
-      if (output_counter>=10){
-          result[idx0 + 3 * idx1] = 10000;
-      }
-      else {
-          result[idx0 + 3 * idx1] = argInit_real_T();
-      }
-      */
       result[idx0 + 3 * idx1] = argInit_real_T();
       input_counter++;
     }
@@ -141,6 +134,7 @@ void main_my_predict_mode1(void)
   argInit_3x70_real_T(dv);
   out = my_predict_mode1(dv);
   SOH = out;
+  SOH_ref = output_manual[output_counter];
 }
 
 int core0_main(void)
@@ -189,14 +183,16 @@ int core0_main(void)
     while(1)
     {
         ////////////////////////////
-        BlinkLEDs(l);
+        timeNow = now();    //saving initial time before computing the machine learning part
+        BlinkLEDs(l);     //This blinking led just to test if the loop works, and estimate/verify the computation time
         if (l==3) l=0;
         else l++;
 
-
-        if (output_counter==30){
+        if (output_counter==150){
             my_predict_mode1_terminate();
+            printRMSE();   // Print RMSE value
             output_counter=0;
+            waitTime(IfxStm_getTicksFromMilliseconds(BSP_DEFAULT_TIMER, 10000));    // Wait 10 seconds
         }
         else{
             main_my_predict_mode1();
