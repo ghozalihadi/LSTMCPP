@@ -174,7 +174,7 @@ int core0_main(void)
             main_my_predict_mode2();
             output_counter++;
         }
-        send_UART_message();    /* Send the message "Hello World!"  */
+        send_UART_message();    /* Print any messages to the AURIX/IDE terminal */
 
 
         //AsclinAscDemo_run();
